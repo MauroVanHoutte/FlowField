@@ -38,6 +38,7 @@ bool gRequestShutdown = false;
 #undef main //Undefine SDL_main as main
 int main(int argc, char* argv[])
 {
+	srand(static_cast<unsigned>(time(nullptr)));
 	int x{}, y{};
 	bool runExeWithCoordinates{ argc == 3 };
 
@@ -96,7 +97,8 @@ int main(int argc, char* argv[])
 		{
 			//Timer
 			TIMER->Update();
-			auto const elapsed = TIMER->GetElapsed();
+			auto elapsed = TIMER->GetElapsed();
+			Elite::Clamp(elapsed, 0.f, 0.1f);
 
 			//Window procedure first, to capture all events and input received by the window
 			if (!pImmediateUI->FocussedOnUI())

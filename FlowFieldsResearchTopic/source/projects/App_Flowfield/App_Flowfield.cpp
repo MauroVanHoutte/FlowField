@@ -6,6 +6,7 @@
 #include "framework\EliteAI\EliteGraphs\EliteGraphAlgorithms\FlowField.h"
 #include "framework\EliteAI\EliteGraphs\EliteGraphAlgorithms\EBFS.h"
 #include "framework/EliteAI/EliteNavigation/EHeuristicFunctions.h"
+#include "Teleporters.h"
 
 
 using namespace Elite;
@@ -25,6 +26,7 @@ App_FlowFieldPathfinding::~App_FlowFieldPathfinding()
 	SAFE_DELETE(m_pSteeringBehaviour);
 	SAFE_DELETE(m_pFlee);
 	SAFE_DELETE(m_pSeek);
+	SAFE_DELETE(m_pFlowfield);
 }
 
 //Functions
@@ -38,9 +40,11 @@ void App_FlowFieldPathfinding::Start()
 
 	//Create Graph
 	MakeGridGraph();
-
+	m_pFlowfield = new FlowField<GridTerrainNode, GraphConnection>(m_pGridGraph, Elite::HeuristicFunctions::Manhattan);
+	RandomizeTeleporter();
+	
 	m_CellCosts.resize(m_pGridGraph->GetNrOfNodes());
-	m_FlowField.resize(m_pGridGraph->GetNrOfNodes());
+	m_FlowFieldVectors.resize(m_pGridGraph->GetNrOfNodes());
 
 	endPathIdx = 200;
 
@@ -80,13 +84,30 @@ void App_FlowFieldPathfinding::Update(float deltaTime)
 	//AGENT UPDATE
 	for (SteeringAgent* agent : m_AgentPointers )
 	{
+		switch (m_TeleporterPair.Closest)
+		{
+		case 1:
+			if (m_pGridGraph->GetNodeFromWorldPos(agent->GetPosition()) == m_TeleporterPair.PositionIndices.second)
+			{
+				agent->SetPosition(m_pGridGraph->GetNodeWorldPos(m_TeleporterPair.PositionIndices.first));
+			}
+			break;
+		case 2:
+			if (m_pGridGraph->GetNodeFromWorldPos(agent->GetPosition()) == m_TeleporterPair.PositionIndices.first)
+			{
+				agent->SetPosition(m_pGridGraph->GetNodeWorldPos(m_TeleporterPair.PositionIndices.second));
+			}
+			break;
+		default:
+			break;
+		}
 		float baseSpeed{ 10.f };
+
 		if (m_pGridGraph->GetNode(m_pGridGraph->GetNodeFromWorldPos(agent->GetPosition()))->GetTerrainType() == TerrainType::Mud)
 			agent->SetMaxLinearSpeed(baseSpeed / 3.f);
 		else
 			agent->SetMaxLinearSpeed(baseSpeed);
-
-		Elite::Vector2 seekTarget{agent->GetPosition() + m_FlowField[m_pGridGraph->GetNodeFromWorldPos(agent->GetPosition())]};
+		Elite::Vector2 seekTarget{agent->GetPosition() + m_FlowFieldVectors[m_pGridGraph->GetNodeFromWorldPos(agent->GetPosition())]};
 		m_pSeek->SetTarget(seekTarget);
 		SetObstacleToAvoid(agent, seekTarget);
 		agent->Update(deltaTime);
@@ -106,16 +127,15 @@ void App_FlowFieldPathfinding::Update(float deltaTime)
 
 	//CALCULATEPATH
 	//If we have nodes and the target is not the startNode, find a path!
+	auto endNode = m_pGridGraph->GetNode(endPathIdx);
 	if (m_UpdatePath 
 		&& endPathIdx != invalid_node_index)
 	{
 		//FlowField
-		auto flowfield = FlowField<GridTerrainNode, GraphConnection>(m_pGridGraph, Elite::HeuristicFunctions::Manhattan);
-		auto endNode = m_pGridGraph->GetNode(endPathIdx);
 
 		//m_vPath = pathfinder.FindPath(startNode, endNode);
-		flowfield.CalculateCellCosts(endNode, m_CellCosts);
-		flowfield.CreateFlowField(m_CellCosts, m_FlowField, endNode);
+		m_pFlowfield->CalculateCellCosts(endNode, m_CellCosts, &m_TeleporterPair);
+		m_pFlowfield->CreateFlowField(m_CellCosts, m_FlowFieldVectors, endNode);
 
 		m_UpdatePath = false;
 		std::cout << "New Path Calculated" << std::endl;
@@ -134,7 +154,7 @@ void App_FlowFieldPathfinding::Render(float deltaTime) const
 		m_bDrawConnectionsCosts,
 		&m_CellCosts,
 		m_bDrawCellCosts,
-		&m_FlowField,
+		&m_FlowFieldVectors,
 		m_bDrawFlowFieldDir
 	);
 
@@ -148,6 +168,12 @@ void App_FlowFieldPathfinding::Render(float deltaTime) const
 	if (m_vPath.size() > 0)
 	{
 		m_GraphRenderer.RenderHighlightedGrid(m_pGridGraph, m_vPath);
+	}
+
+	if (m_bDrawTeleporters)
+	{
+		DEBUGRENDERER2D->DrawSolidCircle(m_pGridGraph->GetNodeWorldPos(m_TeleporterPair.PositionIndices.first), m_pGridGraph->GetCellSize() / 2.f, { 0.f,0.f }, Color{ 0.5f, 0.f, 0.5f }, -1.f);
+		DEBUGRENDERER2D->DrawSolidCircle(m_pGridGraph->GetNodeWorldPos(m_TeleporterPair.PositionIndices.second), m_pGridGraph->GetCellSize() / 2.f, { 0.f,0.f }, Color{ 0.5f, 0.f, 0.5f }, -1.f);
 	}
 }
 
@@ -171,6 +197,13 @@ void App_FlowFieldPathfinding::SetObstacleToAvoid(const SteeringAgent* pAgent, c
 void App_FlowFieldPathfinding::MakeGridGraph()
 {
 	m_pGridGraph = new GridGraph<GridTerrainNode, GraphConnection>(COLUMNS, ROWS, m_SizeCell, false, true, 1.f, 1.5f);
+}
+
+void App_FlowFieldPathfinding::RandomizeTeleporter()
+{
+	m_TeleporterPair.PositionIndices.first  = Elite::randomInt(m_pGridGraph->GetNrOfActiveNodes());
+	m_TeleporterPair.PositionIndices.second  = Elite::randomInt(m_pGridGraph->GetNrOfActiveNodes());
+	m_TeleporterPair.Closest = -1;
 }
 
 void App_FlowFieldPathfinding::UpdateImGui()
@@ -228,6 +261,7 @@ void App_FlowFieldPathfinding::UpdateImGui()
 		ImGui::Checkbox("Connections Costs", &m_bDrawConnectionsCosts);
 		ImGui::Checkbox("Cell Costs", &m_bDrawCellCosts);
 		ImGui::Checkbox("Flow Field Direction", &m_bDrawFlowFieldDir);
+		ImGui::Checkbox("Teleporters", &m_bDrawTeleporters);
 		if (ImGui::Combo("", &m_SelectedHeuristic, "Manhattan\0Euclidean\0SqrtEuclidean\0Octile\0Chebyshev", 4))
 		{
 			switch (m_SelectedHeuristic)

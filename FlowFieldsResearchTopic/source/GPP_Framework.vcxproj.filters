@@ -95,6 +95,7 @@
     <ClInclude Include="projects\App_Flowfield\SteeringBehaviors.h" />
     <ClInclude Include="projects\App_Flowfield\SteeringHelpers.h" />
     <ClInclude Include="projects\App_Flowfield\App_Flowfield.h" />
+    <ClInclude Include="projects\App_Flowfield\Teleporters.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="imgui.ini" />

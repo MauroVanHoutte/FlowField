@@ -1,5 +1,6 @@
 #pragma once
 #include "framework\EliteAI\EliteGraphs\EGridGraph.h"
+#include "../../FlowFieldsResearchTopic/source/projects/App_Flowfield/Teleporters.h"
 #include <vector>
 
 namespace Elite
@@ -14,16 +15,12 @@ namespace Elite
 		struct NodeRecord
 		{
 			T_NodeType* pNode = nullptr;
-			T_ConnectionType* pConnection = nullptr;
 			float costSoFar = 0.f; // accumulated g-costs of all the connections leading up to this one
 			float estimatedTotalCost = 0.f; // f-cost (= costSoFar + h-cost)
 
 			bool operator==(const NodeRecord& other) const
 			{
 				return pNode == other.pNode
-					&& pConnection == other.pConnection
-					&& costSoFar == other.costSoFar
-					&& estimatedTotalCost == other.estimatedTotalCost;
 			};
 
 			bool operator<(const NodeRecord& other) const
@@ -31,7 +28,7 @@ namespace Elite
 				return costSoFar < other.costSoFar;
 			};
 		};
-		void CalculateCellCosts(T_NodeType* pDestinationNode, std::vector<float>& cellCosts);
+		void CalculateCellCosts(T_NodeType* pDestinationNode, std::vector<float>& cellCosts, TeleporterPair* teleporterPair );
 		void CreateFlowField(const std::vector<float>& cellCosts, std::vector<Vector2>& flowField, const T_NodeType* endNode);
 
 	private:
@@ -49,8 +46,9 @@ namespace Elite
 	}
 
 	template<class T_NodeType, class T_ConnectionType>
-	inline void FlowField<T_NodeType, T_ConnectionType>::CalculateCellCosts(T_NodeType* pDestinationNode, std::vector<float>& cellCosts)
+	inline void FlowField<T_NodeType, T_ConnectionType>::CalculateCellCosts(T_NodeType* pDestinationNode, std::vector<float>& cellCosts, TeleporterPair* teleporterPair)
 	{
+		teleporterPair->Closest = -1;
 		for ( float& cost : cellCosts )
 		{
 			cost = FLT_MAX;
@@ -67,17 +65,40 @@ namespace Elite
 		{
 			auto smallestRecordIt = std::min_element(openList.begin(), openList.end());
 			NodeRecord currentRecord = *smallestRecordIt;
+			if (currentRecord.pNode->GetIndex() == 41)
+			{
+				int i{ 0 };
+			}
 			openList[smallestRecordIt - openList.begin()] = openList.back();
 			openList.pop_back();
-			Vector2 nodePos{ m_pGraph->GetNodePos(currentRecord.pNode) };
-			cellCosts[nodePos.y * m_pGraph->GetColumns() + nodePos.x] = currentRecord.costSoFar;
+			cellCosts[currentRecord.pNode->GetIndex()] = currentRecord.costSoFar;
+			if (teleporterPair && teleporterPair->Closest == -1)
+			{
+				if (teleporterPair->PositionIndices.first == currentRecord.pNode->GetIndex())
+				{
+					NodeRecord teleporterRecord;
+					teleporterRecord.pNode = m_pGraph->GetNode(teleporterPair->PositionIndices.second);
+					teleporterRecord.costSoFar = currentRecord.costSoFar;
+					teleporterPair->Closest = 1;
+					openList.push_back(teleporterRecord);
+					closedList.push_back(teleporterRecord.pNode);
+				}
+				if (teleporterPair->PositionIndices.second == currentRecord.pNode->GetIndex())
+				{
+					NodeRecord teleporterRecord;
+					teleporterRecord.pNode = m_pGraph->GetNode(teleporterPair->PositionIndices.first);
+					teleporterRecord.costSoFar = currentRecord.costSoFar;
+					teleporterPair->Closest = 2;
+					openList.push_back(teleporterRecord);
+					closedList.push_back(teleporterRecord.pNode);
+				}
+			}
 			
 
 			for (T_ConnectionType* con : m_pGraph->GetNodeConnections(currentRecord.pNode->GetIndex()))
 			{
 				NodeRecord newRecord;
 				newRecord.pNode = m_pGraph->GetNode(con->GetTo());
-				newRecord.pConnection = con;
 				newRecord.costSoFar = currentRecord.costSoFar + con->GetCost();
 
 				if (std::find(closedList.begin(), closedList.end(), newRecord.pNode) == closedList.end())

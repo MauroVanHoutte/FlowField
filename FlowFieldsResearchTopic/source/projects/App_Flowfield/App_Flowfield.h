@@ -4,12 +4,14 @@
 // Includes & Forward Declarations
 //-----------------------------------------------------------------
 #include "framework/EliteInterfaces/EIApp.h"
+#include "framework\EliteAI\EliteGraphs\EliteGraphAlgorithms\FlowField.h"
 #include "framework\EliteAI\EliteGraphs\EGridGraph.h"
 #include "framework\EliteAI\EliteGraphs\EliteGraphUtilities\EGraphEditor.h"
 #include "framework\EliteAI\EliteGraphs\EliteGraphUtilities\EGraphRenderer.h"
 #include "SteeringAgent.h"
 #include "SteeringBehaviors.h"
 #include "CombinedSteeringBehaviors.h"
+#include "Teleporters.h"
 
 
 //-----------------------------------------------------------------
@@ -36,12 +38,14 @@ private:
 	Elite::Vector2 m_WorldTopRight;
 
 	//Grid datamembers
-	static const int COLUMNS = 20;
-	static const int ROWS = 20;
+	static const int COLUMNS = 50;
+	static const int ROWS = 50;
 	unsigned int m_SizeCell = 5;
 	Elite::GridGraph<Elite::GridTerrainNode, Elite::GraphConnection>* m_pGridGraph;
 	std::vector<float> m_CellCosts;
-	std::vector<Elite::Vector2> m_FlowField;
+	std::vector<Elite::Vector2> m_FlowFieldVectors;
+	FlowField<GridTerrainNode, GraphConnection>* m_pFlowfield;
+
 
 	//Agents
 	std::vector<SteeringAgent*> m_AgentPointers;
@@ -52,6 +56,9 @@ private:
 	
 	//Obstacles
 	std::vector<Obstacle*> m_Obstacles;
+
+	//Teleporters
+	TeleporterPair m_TeleporterPair;
 
 
 	//Pathfinding datamembers
@@ -64,6 +71,7 @@ private:
 	Elite::EGraphRenderer m_GraphRenderer{};
 
 	//Debug rendering information
+	bool m_bDrawTeleporters = true;
 	bool m_bDrawGrid = true;
 	bool m_bDrawNodeNumbers = false;
 	bool m_bDrawConnections = false;
@@ -76,6 +84,7 @@ private:
 
 	//Functions
 	void MakeGridGraph();
+	void RandomizeTeleporter();
 	void UpdateImGui();
 
 	//C++ make the class non-copyable

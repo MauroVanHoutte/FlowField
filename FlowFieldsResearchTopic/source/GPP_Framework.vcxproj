@@ -394,6 +394,7 @@
     <ClInclude Include="projects\App_Flowfield\SteeringAgent.h" />
     <ClInclude Include="projects\App_Flowfield\SteeringBehaviors.h" />
     <ClInclude Include="projects\App_Flowfield\SteeringHelpers.h" />
+    <ClInclude Include="projects\App_Flowfield\Teleporters.h" />
     <ClInclude Include="projects\App_Selector.h" />
     <ClInclude Include="projects\Shared\BaseAgent.h" />
     <ClInclude Include="projects\Shared\NavigationColliderElement.h" />
