@@ -88,7 +88,6 @@
     <ClInclude Include="framework\EliteAI\EliteNavigation\ENavigation.h" />
     <ClInclude Include="framework\EliteAI\EliteNavigation\Algorithms\EPathSmoothing.h" />
     <ClInclude Include="projects\Shared\NavigationColliderElement.h" />
-    <ClInclude Include="framework\EliteAI\EliteGraphs\EliteGraphAlgorithms\FlowField.h" />
     <ClInclude Include="projects\App_Flowfield\CombinedSteeringBehaviors.h" />
     <ClInclude Include="projects\App_Flowfield\Obstacle.h" />
     <ClInclude Include="projects\App_Flowfield\SteeringAgent.h" />
@@ -96,6 +95,7 @@
     <ClInclude Include="projects\App_Flowfield\SteeringHelpers.h" />
     <ClInclude Include="projects\App_Flowfield\App_Flowfield.h" />
     <ClInclude Include="projects\App_Flowfield\Teleporters.h" />
+    <ClInclude Include="projects\App_Flowfield\FlowField.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="imgui.ini" />

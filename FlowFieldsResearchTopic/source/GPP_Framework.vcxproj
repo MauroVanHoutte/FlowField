@@ -336,7 +336,7 @@
     <ClInclude Include="framework\EliteAI\EliteGraphs\EGraphNodeTypes.h" />
     <ClInclude Include="framework\EliteAI\EliteGraphs\EGridGraph.h" />
     <ClInclude Include="framework\EliteAI\EliteGraphs\EIGraph.h" />
-    <ClInclude Include="framework\EliteAI\EliteGraphs\EliteGraphAlgorithms\FlowField.h" />
+    <ClInclude Include="projects\App_Flowfield\FlowField.h" />
     <ClInclude Include="framework\EliteAI\EliteGraphs\EliteGraphAlgorithms\EBFS.h" />
     <ClInclude Include="framework\EliteAI\EliteGraphs\EliteGraphUtilities\EGraphEditor.h" />
     <ClInclude Include="framework\EliteAI\EliteGraphs\EliteGraphUtilities\EGraphRenderer.h" />

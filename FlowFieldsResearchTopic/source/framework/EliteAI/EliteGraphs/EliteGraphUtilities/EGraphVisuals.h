@@ -8,7 +8,7 @@ const Elite::Color DEFAULT_CONNECTION_COLOR{ .2f, .2f, .2f };
 
 const Elite::Color HIGHLIGHTED_NODE_COLOR{ 0.f, 0.8f, 0.1f };
 const Elite::Color START_NODE_COLOR{ 0.f, 1.0f, 0.0f };
-const Elite::Color END_NODE_COLOR{ 1.f, 0.f, 0.f };
+const Elite::Color END_NODE_COLOR{ 0.f, 0.f, 1.f };
 
 const Elite::Color GROUND_NODE_COLOR{ DEFAULT_NODE_COLOR };
 const Elite::Color MUD_NODE_COLOR{ 0.4f, 0.2f, 0.f };

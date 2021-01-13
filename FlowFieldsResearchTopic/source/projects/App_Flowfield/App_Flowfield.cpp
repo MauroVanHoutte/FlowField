@@ -3,7 +3,6 @@
 
 //Includes
 #include "App_Flowfield.h"
-#include "framework\EliteAI\EliteGraphs\EliteGraphAlgorithms\FlowField.h"
 #include "framework\EliteAI\EliteGraphs\EliteGraphAlgorithms\EBFS.h"
 #include "framework/EliteAI/EliteNavigation/EHeuristicFunctions.h"
 #include "Teleporters.h"
@@ -56,7 +55,7 @@ void App_FlowFieldPathfinding::Start()
 
 	m_WorldBotLeft = m_pGridGraph->GetNodeWorldPos(0) - Elite::Vector2{m_pGridGraph->GetCellSize()/2.5f, m_pGridGraph->GetCellSize() / 2.5f };
 	m_WorldTopRight = m_pGridGraph->GetNodeWorldPos(m_pGridGraph->GetNrOfNodes()-1) + Elite::Vector2{ m_pGridGraph->GetCellSize() / 2.5f, m_pGridGraph->GetCellSize() / 2.5f };
-	for (size_t i = 0; i < 1; i++)
+	for (size_t i = 0; i < 50; i++)
 	{
 		m_AgentPointers.push_back(new SteeringAgent());
 		m_AgentPointers[i]->SetPosition(Elite::Vector2{ Elite::randomFloat(m_WorldBotLeft.x, m_WorldTopRight.x), Elite::randomFloat(m_WorldBotLeft.y, m_WorldTopRight.y) });
@@ -135,11 +134,11 @@ void App_FlowFieldPathfinding::Update(float deltaTime)
 
 		//m_vPath = pathfinder.FindPath(startNode, endNode);
 		m_pFlowfield->CalculateCellCosts(endNode, m_CellCosts, &m_TeleporterPair);
-		m_pFlowfield->CreateFlowField(m_CellCosts, m_FlowFieldVectors, endNode);
 
 		m_UpdatePath = false;
 		std::cout << "New Path Calculated" << std::endl;
 	}
+	m_pFlowfield->CreateFlowField(m_CellCosts, m_FlowFieldVectors, endNode, &m_AgentPointers, m_TrafficMultiplier);
 }
 
 void App_FlowFieldPathfinding::Render(float deltaTime) const
@@ -219,7 +218,7 @@ void App_FlowFieldPathfinding::UpdateImGui()
 		bool windowActive = true;
 		ImGui::SetNextWindowPos(ImVec2((float)width - menuWidth - 10, 10));
 		ImGui::SetNextWindowSize(ImVec2((float)menuWidth, (float)height - 20));
-		ImGui::Begin("Gameplay Programming", &windowActive, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse);
+		ImGui::Begin("Flowfield", &windowActive, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse);
 		ImGui::PushAllowKeyboardFocus(false);
 
 		//Elements
@@ -239,21 +238,6 @@ void App_FlowFieldPathfinding::UpdateImGui()
 
 		/*Spacing*/ImGui::Spacing(); ImGui::Separator(); ImGui::Spacing(); ImGui::Spacing();
 
-		ImGui::Text("A* Pathfinding");
-		ImGui::Spacing();
-
-		ImGui::Text("Middle Mouse");
-		ImGui::Text("controls");
-		std::string buttonText{""};
-		if (m_StartSelected)
-			buttonText += "Start Node";
-		else
-			buttonText += "End Node";
-
-		if (ImGui::Button(buttonText.c_str()))
-		{
-			m_StartSelected = !m_StartSelected;
-		}
 
 		ImGui::Checkbox("Grid", &m_bDrawGrid);
 		ImGui::Checkbox("NodeNumbers", &m_bDrawNodeNumbers);
@@ -262,6 +246,7 @@ void App_FlowFieldPathfinding::UpdateImGui()
 		ImGui::Checkbox("Cell Costs", &m_bDrawCellCosts);
 		ImGui::Checkbox("Flow Field Direction", &m_bDrawFlowFieldDir);
 		ImGui::Checkbox("Teleporters", &m_bDrawTeleporters);
+		ImGui::SliderFloat("Traffic Multiplier", &m_TrafficMultiplier, 0.f, 10.f);
 		if (ImGui::Combo("", &m_SelectedHeuristic, "Manhattan\0Euclidean\0SqrtEuclidean\0Octile\0Chebyshev", 4))
 		{
 			switch (m_SelectedHeuristic)

@@ -1,6 +1,6 @@
 #pragma once
-#include "framework\EliteAI\EliteGraphs\EGridGraph.h"
-#include "../../FlowFieldsResearchTopic/source/projects/App_Flowfield/Teleporters.h"
+#include "Teleporters.h"
+#include "SteeringAgent.h"
 #include <vector>
 
 namespace Elite
@@ -20,7 +20,7 @@ namespace Elite
 
 			bool operator==(const NodeRecord& other) const
 			{
-				return pNode == other.pNode
+				return pNode == other.pNode;
 			};
 
 			bool operator<(const NodeRecord& other) const
@@ -28,13 +28,14 @@ namespace Elite
 				return costSoFar < other.costSoFar;
 			};
 		};
-		void CalculateCellCosts(T_NodeType* pDestinationNode, std::vector<float>& cellCosts, TeleporterPair* teleporterPair );
-		void CreateFlowField(const std::vector<float>& cellCosts, std::vector<Vector2>& flowField, const T_NodeType* endNode);
+		void CalculateCellCosts(T_NodeType* pDestinationNode, std::vector<float>& cellCosts, TeleporterPair* teleporterPair = nullptr );
+		void CreateFlowField(const std::vector<float>& cellCosts, std::vector<Vector2>& flowField, const T_NodeType* endNode, const std::vector<SteeringAgent*>* pAgents = nullptr, float trafficPerAgentMul = 1.f);
 
 	private:
 		float GetHeuristicCost(T_NodeType* pStartNode, T_NodeType* pEndNode) const;
 
 		GridGraph<T_NodeType, T_ConnectionType>* m_pGraph;
+		std::vector<float> m_Traffic;
 		Heuristic m_HeuristicFunction;
 	};
 
@@ -43,6 +44,7 @@ namespace Elite
 		: m_pGraph(pGraph)
 		, m_HeuristicFunction(hFunction)
 	{
+		m_Traffic.resize(m_pGraph->GetNrOfNodes());
 	}
 
 	template<class T_NodeType, class T_ConnectionType>
@@ -111,8 +113,29 @@ namespace Elite
 	}
 
 	template<class T_NodeType, class T_ConnectionType>
-	inline void FlowField<T_NodeType, T_ConnectionType>::CreateFlowField(const std::vector<float>& cellCosts, std::vector<Vector2>& flowField, const T_NodeType* endNode)
+	inline void FlowField<T_NodeType, T_ConnectionType>::CreateFlowField(const std::vector<float>& cellCosts, std::vector<Vector2>& flowField, const T_NodeType* endNode, const std::vector<SteeringAgent*>* pAgents, float trafficPerAgentMul)
 	{
+		const std::vector<float>* finalCosts;
+		if (pAgents)
+		{
+			for (size_t i = 0; i < m_Traffic.size(); i++)
+			{
+				m_Traffic[i] = 0.f; //reset
+			}
+			for (size_t i = 0; i < pAgents->size(); i++) //adding a small cost too each cell per agent
+			{
+				m_Traffic[m_pGraph->GetNodeFromWorldPos((*pAgents)[i]->GetPosition())] += trafficPerAgentMul * (*pAgents)[i]->GetRadius() / m_pGraph->GetCellSize(); //taffic from each agent is bigger if the cellsize is smaller and the agent radius is bigger
+				DEBUGRENDERER2D->DrawSolidCircle(m_pGraph->GetNodeWorldPos(m_pGraph->GetNodeFromWorldPos((*pAgents)[i]->GetPosition())), m_pGraph->GetCellSize() / 2, {0.f,0.f}, { 0.7f, 0.f, 0.f });
+			}
+			for (size_t i = 0; i < m_Traffic.size(); i++)
+			{
+				m_Traffic[i] += cellCosts[i]; //adding the cellCosts
+			}
+			finalCosts = &m_Traffic;
+		}
+		else
+			finalCosts = &cellCosts;
+
 		for (size_t i = 0; i < flowField.size(); i++)
 		{
 			flowField[i] = ZeroVector2;
@@ -120,8 +143,8 @@ namespace Elite
 		for (auto node : m_pGraph->GetAllNodes() )
 		{
 			auto connections = m_pGraph->GetNodeConnections(node->GetIndex());
-			auto cheapestConnectionIt = std::min_element(connections.begin(), connections.end(), [&cellCosts](const T_ConnectionType* lh, const T_ConnectionType* rh) {
-				return cellCosts[lh->GetTo()] < cellCosts[rh->GetTo()];
+			auto cheapestConnectionIt = std::min_element(connections.begin(), connections.end(), [&finalCosts](const T_ConnectionType* lh, const T_ConnectionType* rh) {
+				return (*finalCosts)[lh->GetTo()] < (*finalCosts)[rh->GetTo()];
 				});
 			if (cheapestConnectionIt == connections.end() || node->GetIndex() == endNode->GetIndex())
 			{

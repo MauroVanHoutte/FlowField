@@ -63,7 +63,7 @@ namespace Elite
 					//FlowField
 					if (renderFlowField)
 					{
-						DEBUGRENDERER2D->DrawDirection(cellPos, (*flowField)[idx], cellSize / 2.f, { 1.f,1.f,1.f });
+						DEBUGRENDERER2D->DrawDirection(cellPos, (*flowField)[idx], cellSize / 2.f, { 1.f,1.f,1.f }, -1);
 					}
 
 					//Node
