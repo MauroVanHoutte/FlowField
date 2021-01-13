@@ -50,7 +50,10 @@ namespace Elite
 	template<class T_NodeType, class T_ConnectionType>
 	inline void FlowField<T_NodeType, T_ConnectionType>::CalculateCellCosts(T_NodeType* pDestinationNode, std::vector<float>& cellCosts, TeleporterPair* teleporterPair)
 	{
-		teleporterPair->Closest = -1;
+		if (teleporterPair)
+		{
+			teleporterPair->Closest = -1;
+		}
 		for ( float& cost : cellCosts )
 		{
 			cost = FLT_MAX;
@@ -67,10 +70,6 @@ namespace Elite
 		{
 			auto smallestRecordIt = std::min_element(openList.begin(), openList.end());
 			NodeRecord currentRecord = *smallestRecordIt;
-			if (currentRecord.pNode->GetIndex() == 41)
-			{
-				int i{ 0 };
-			}
 			openList[smallestRecordIt - openList.begin()] = openList.back();
 			openList.pop_back();
 			cellCosts[currentRecord.pNode->GetIndex()] = currentRecord.costSoFar;

@@ -224,8 +224,8 @@ void App_FlowFieldPathfinding::UpdateImGui()
 		//Elements
 		ImGui::Text("CONTROLS");
 		ImGui::Indent();
-		ImGui::Text("LMB: target");
-		ImGui::Text("RMB: start");
+		ImGui::Text("LMB: change tile type");
+		ImGui::Text("MMB: change destination");
 		ImGui::Unindent();
 
 		/*Spacing*/ImGui::Spacing();ImGui::Separator();ImGui::Spacing();ImGui::Spacing();
