@@ -82,8 +82,6 @@ private:
 	bool m_bDrawCellCosts = false;
 	bool m_bDrawFlowFieldDir = false;
 	bool m_StartSelected = true;
-	int m_SelectedHeuristic = 4;
-	Elite::Heuristic m_pHeuristicFunction = Elite::HeuristicFunctions::Chebyshev;
 
 	//Functions
 	void MakeGridGraph();

@@ -247,30 +247,6 @@ void App_FlowFieldPathfinding::UpdateImGui()
 		ImGui::Checkbox("Flow Field Direction", &m_bDrawFlowFieldDir);
 		ImGui::Checkbox("Teleporters", &m_bDrawTeleporters);
 		ImGui::SliderFloat("Traffic Multiplier", &m_TrafficMultiplier, 0.f, 10.f);
-		if (ImGui::Combo("", &m_SelectedHeuristic, "Manhattan\0Euclidean\0SqrtEuclidean\0Octile\0Chebyshev", 4))
-		{
-			switch (m_SelectedHeuristic)
-			{
-			case 0:
-				m_pHeuristicFunction = HeuristicFunctions::Manhattan;
-				break;
-			case 1:
-				m_pHeuristicFunction = HeuristicFunctions::Euclidean;
-				break;
-			case 2:
-				m_pHeuristicFunction = HeuristicFunctions::SqrtEuclidean;
-				break;
-			case 3:
-				m_pHeuristicFunction = HeuristicFunctions::Octile;
-				break;
-			case 4:
-				m_pHeuristicFunction = HeuristicFunctions::Chebyshev;
-				break;
-			default:
-				m_pHeuristicFunction = HeuristicFunctions::Chebyshev;
-				break;
-			}
-		}
 		ImGui::Spacing();
 
 		//End
