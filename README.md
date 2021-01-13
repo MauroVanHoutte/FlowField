@@ -1,6 +1,7 @@
 # FlowField pathfinding
  
  A flow field is a way of pathfinding that works on a grid, for every cell in the grid a vector is calculated, any agent traversing the grid can then use the vector assigned to the cell the agent is currently in to take the shortest route to the destination.
+ 
  ![Flowfield](https://github.com/MauroVanHoutte/FlowField/blob/main/Gifs/Flowfield.gif)
  
 # Design
