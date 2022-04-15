@@ -8,7 +8,7 @@
 
 The flow field is designed to work on the grid and graph implementations of the Elite framework, the box2d library is used as physics engine and the interface is made using ImGui.
 The algorithm itself runs in 2 steps, the first step is calculating the cost from the destination cell to each other cell in the grid, the second step is creating a unit vector for each cell pointing towards the cells neighbour with the cheapest cost.
-To let the agents utilize the flow field, the cell the agent is in is calculated from then align the agents velocity with the vector that corresponds to his current cell
+To let the agents utilize the flow field, the cell the agent is in is calculated from the agents position, then the agents steers towards the direction of the cell he is in
 
 # Implementation
 
