@@ -57,7 +57,7 @@ While implementing the flowfield i had 2 other systems in mind that use the flow
 
   The implementation exists of a struct holding the node indices where the 2 teleporters are located and a variable that keeps track of which teleporter is closer to the destination.
   To adjust the flowfield to this, during the calculation of the cell costs and before adding a node's connections to the openlist, if the node is one of the teleporters add the
-  other the other teleporter to the openlist with the same cost.
+  other teleporter to the openlist with the same cost.
   In Pseudo code that looks like this:
   
 ```
