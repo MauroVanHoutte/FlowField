@@ -88,7 +88,7 @@ node = FindLowestCostNode(openlist)
   
 ![Anti Traffic](https://github.com/MauroVanHoutte/FlowField/blob/main/Gifs/AntiTraffic.gif)
 
-  To combat the cluttering when the vectors of each cell are calculated the cell cost is increased for every agent currently in the cell,
+  To prevent all agents from taking the same narrow path when the vectors of each cell are calculated the cell cost is increased for every agent currently in the cell,
   this implementation does have an impact on performance as the vectors of the cell now need to be calculated every frame
   
  # Future work
